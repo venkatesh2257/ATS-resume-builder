@@ -37,7 +37,9 @@ export function PDFUpload({ onResumeLoad, isLoading }: PDFUploadProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to parse PDF");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || "Failed to parse PDF";
+        throw new Error(errorMessage);
       }
 
       const resumeData = await response.json();
@@ -48,9 +50,10 @@ export function PDFUpload({ onResumeLoad, isLoading }: PDFUploadProps) {
         description: "Resume has been successfully parsed",
       });
     } catch (error: any) {
+      console.error("PDF upload error:", error);
       toast({
         title: "Upload Failed",
-        description: error.message,
+        description: error.message || "Failed to parse PDF",
         variant: "destructive",
       });
     } finally {
