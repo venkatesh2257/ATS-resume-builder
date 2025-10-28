@@ -55,3 +55,4 @@ vite.config.ts.*
 
 # OS metadata
 *.orig
+.local/
