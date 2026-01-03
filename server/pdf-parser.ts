@@ -11,11 +11,15 @@ export async function parsePDFToResume(buffer: Buffer): Promise<Resume> {
 
     // Method 1: Try pdf-parse
     try {
+      console.log('🔍 Attempting pdf-parse module import...');
       const pdfParseModule = await import('pdf-parse');
       const pdfParse = (pdfParseModule as any).default || pdfParseModule;
       
       if (typeof pdfParse === 'function') {
-  const data = await pdfParse(buffer);
+        console.log('📄 Using pdf-parse function...');
+        console.log('📊 Buffer length:', buffer.length);
+        console.log('📊 Buffer type:', buffer instanceof Buffer ? 'Buffer' : typeof buffer);
+        const data = await pdfParse(buffer);
         extractedText = data.text || '';
         console.log('📄 PDF text extracted via pdf-parse, length:', extractedText.length);
         parseSuccess = true;
@@ -28,8 +32,13 @@ export async function parsePDFToResume(buffer: Buffer): Promise<Resume> {
     if (!parseSuccess || extractedText.length < 10) {
       try {
         console.log('🔄 Trying pdfjs-dist as fallback...');
+        console.log('📊 Importing pdfjs-dist...');
         const pdfjsLib = await import('pdfjs-dist');
-        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        console.log('📊 Converting buffer to Uint8Array...');
+        console.log('📊 Buffer length:', buffer.length);
+        console.log('📊 Buffer type:', buffer instanceof Buffer ? 'Buffer' : typeof buffer);
+        const uint8Array = new Uint8Array(buffer);
+        const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
         
         let fullText = '';
         for (let i = 1; i <= pdf.numPages; i++) {

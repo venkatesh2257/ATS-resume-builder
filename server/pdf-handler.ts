@@ -76,9 +76,18 @@ export async function handlePDFUpload(req: Request, res: Response, next: NextFun
     // Configure formidable
     const uploadDir = path.join(__dirname, 'uploads');
     
-    // Ensure uploads directory exists
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    // Ensure uploads directory exists with proper permissions
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
+      }
+    } catch (mkdirError) {
+      console.error('Failed to create uploads directory:', mkdirError);
+      // Try temp directory as fallback
+      const tempDir = path.join(process.env.TEMP || process.env.TMP || '/tmp', 'pdf-uploads');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true, mode: 0o755 });
+      }
     }
     
     const form = formidable({
